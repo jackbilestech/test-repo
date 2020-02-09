@@ -27,12 +27,13 @@ import "./assets/sass/light-bootstrap-dashboard-react.scss?v=1.3.0";
 import "./assets/css/demo.css";
 import "./assets/css/pe-icon-7-stroke.css";
 
-import AdminLayout from "layouts/Admin.jsx";
+import AdminLayout from "layouts/site.jsx";
 
 ReactDOM.render(
   <BrowserRouter>
     <Switch>
-      <Route path="/" render={props => <AdminLayout {...props} />} />
+      <Route path="/" render={props => <AdminLayout {...props} />}></Route>
+      <Redirect from='/' to='/site/jack'></Redirect>
     </Switch>
   </BrowserRouter>,
   document.getElementById("root")

@@ -24,14 +24,14 @@ const dashboardRoutes = [
     name: "About Jack",
     icon: "pe-7s-user",
     component: AboutMe,
-    layout: "/admin"
+    layout: "/site"
   },
   {
     path: "/repos",
-    name: "Repos",
+    name: "Active Projects",
     icon: "pe-7s-user",
     component: List,
-    layout: "/admin"
+    layout: "/site"
   }
 ];
 
