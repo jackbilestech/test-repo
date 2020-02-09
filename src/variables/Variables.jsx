@@ -21,8 +21,6 @@
 // //
 //
 
-var githubEndpoint = "https://api.github.com"
-
 var defaultWidth =
   window.screen.width > 768
     ? (window.screen.width * 1) / 3

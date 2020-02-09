@@ -16,7 +16,7 @@
 
 */
 import AboutMe from "views/AboutJack.jsx";
-import Git from "views/GitHubRepoList.jsx";
+import List from "views/GitHubList.jsx";
 
 const dashboardRoutes = [
   {
@@ -30,7 +30,7 @@ const dashboardRoutes = [
     path: "/repos",
     name: "Repos",
     icon: "pe-7s-user",
-    component: Git,
+    component: List,
     layout: "/admin"
   }
 ];

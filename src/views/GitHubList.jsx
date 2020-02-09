@@ -15,6 +15,7 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
+import * as creds from "../variables/Credentials"
 import React, { Component } from "react";
 import {
   Grid,
@@ -29,32 +30,28 @@ import { Card } from "components/Card/Card.jsx";
 import { FormInputs } from "components/FormInputs/FormInputs.jsx";
 import { UserCard } from "components/UserCard/UserCard.jsx";
 import Button from "components/CustomButton/CustomButton.jsx";
+import GitLayer from "api/GitHubLayer.js"
 
-class UserProfile extends Component {
+class List extends Component {
   constructor(props) {
     super(props);
     this.state = {
         repos : []
     };
   }
-  componentDidMount() {
-    fetch(`https://api.github.com/users/jackbilestech/repos`)
-      .then(res => res.json())
-      .then(
-        (result) => {
-          this.setState({repos : result});
-          
-        },
-        // Note: it's important to handle errors here
-        // instead of a catch() block so that we don't swallow
-        // exceptions from actual bugs in components.
-        (error) => {
-          this.setState();
-        }
-      )
+  componentDidMount(){
+    creds.githubAccount.map((user, index) => {
+        GitLayer.getList(user).then((d) => {
+            this.state.repos = this.state.repos.concat(d)
+            
+            this.setState(this.state.repos)
+        })
+      })
+
   }
 
   repoClicked = (repo,evt) => {
+    
       if(repo.has_pages){
         window.location.href = (`http://${repo.owner.login}.github.io/${repo.name}`)
       }
@@ -66,24 +63,32 @@ class UserProfile extends Component {
   render() {
     return (
       <div className="content">
-        <Grid fluid>
             <Row>
-                {this.state.repos.map((value, index) => 
-                    <Col onClick={this.repoClicked.bind(this,value)}>
-                        <Card
-                        title={value.name}
-                        content = {
-                            <span>{value.description}</span>
+                {this.state.repos.map((value, index) =>
+                    <Col onClick={this.repoClicked.bind(this,value)} md={4}>
+                        <UserCard
+                        bgImage="https://www.oecd.org/media/oecdorg/directorates/developmentco-operationdirectoratedcd-dac/fsd/fsdsliders/ODA-release-2019.jpg"
+                        name={value.name}
+                        avatar={value.owner.avatar_url}
+                        description = {
+                            <span>
+                                {value.description}
+                                <br></br>
+                                <h4>Language: {value.language || 'Unkown'}</h4>
+                                <span>
+                                    <h3>Account: {value.owner.login}</h3>
+                                </span>
+                            </span>
+                            
                         }
                         
-                    />   
+                    />
                     </Col>
                 )}
             </Row>
-        </Grid>
       </div>
     );
   }
 }
 
-export default UserProfile;
+export default List;
