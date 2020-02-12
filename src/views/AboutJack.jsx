@@ -31,7 +31,7 @@ import { FormInputs } from "components/FormInputs/FormInputs.jsx";
 import { UserCard } from "components/UserCard/UserCard.jsx";
 import Button from "components/CustomButton/CustomButton.jsx";
 import GitLayer from 'api/GitHubLayer.js'
-import { Pie } from 'react-chartjs-2';
+import { Pie ,defaults } from 'react-chartjs-2';
 
 import avatar_url from "assets/img/default-avatar.png";
 
@@ -44,7 +44,7 @@ class UserProfile extends Component {
         avatar_url : avatar_url
       }],
       analytics : {
-        totalRepos : 0,
+        totalRepos : null,
         repos : [],
         graphData : {
           labels: [],
@@ -55,67 +55,79 @@ class UserProfile extends Component {
         }
       },
     };
+    
   }
   componentDidMount() {
+
+
+    var self = this
+    var promises = []
+
     creds.githubAccount.map((username, index) => {
-      GitLayer.getProfile(username)
-      .then(
-        (result) => {
-          this.setState(this.state.profile[index] = result)
+      promises[index] = GitLayer.getProfile(username) //Get all user profiles
+    })
+
+    Promise.all(promises).then(function(values) {
+      values.map((result, index) => {
+          self.setState(self.state.profile[index] = result)
           //Calculate analytics
-          this.state.analytics.totalRepos = (this.state.analytics.totalRepos += result.public_repos)
+          self.state.analytics.totalRepos = (self.state.analytics.totalRepos += result.public_repos)
+      })
+    }).then(GitLayer.isLoaded).then( () => {
 
-          GitLayer.getList(username).then((d) => {
-            
-            this.state.analytics.repos = this.state.analytics.repos.concat(d)
+      
+      var promises = []
+      self.state.profile.map((profile, index) => {
+        promises[index] =  GitLayer.getList(profile.login)
+      })
 
-            var languageList = []
-            var languageTracker = []
-            var tracker = 0
-            this.state.analytics.repos.map((repo,index) => {
-              if(languageList.indexOf(repo.language) > -1){
-                var label = languageList[languageList.indexOf(repo.language)]
+      Promise.all(promises).then(function(repos) {   
+        repos.map((list, index) => {
+          list.map((d, index) => {
 
-                for(var ind in languageList){
-                  if(label == languageTracker[ind].label){
-                    languageTracker[ind].hits++;
-                    this.state.analytics.graphData.datasets[0].data[ind] = languageTracker[ind].hits
-                    this.state.analytics.graphData.datasets[0].backgroundColor[ind] = languageTracker[ind].color
+            self.state.analytics.repos = self.state.analytics.repos.concat(d)
+  
+              var languageList = []
+              var languageTracker = []
+              var tracker = 0
+              self.state.analytics.repos.map((repo,index) => {
+                if(languageList.indexOf(repo.language) > -1){
+                  var label = languageList[languageList.indexOf(repo.language)]
+  
+                  for(var ind in languageList){
+                    if(label == languageTracker[ind].label){
+                      languageTracker[ind].hits++;
+                      self.state.analytics.graphData.datasets[0].data[ind] = languageTracker[ind].hits
+                      self.state.analytics.graphData.datasets[0].backgroundColor[ind] = languageTracker[ind].color
+                    }
                   }
                 }
-              }
-              else{
-                //New language          
-                languageList[tracker] = repo.language
-                languageTracker[tracker] = {
-                  label : repo.language,
-                  hits: 1,
-                  color: '#'+(Math.random()*0xFFFFFF<<0).toString(16)
+                else{
+                  //New language          
+                  languageList[tracker] = repo.language
+                  
+                  languageTracker[tracker] = {
+                    label : (!repo.language? 'Not Recognised' : repo.language),
+                    hits: 1,
+                    color: GitLayer.getLanguageColor(repo.language)
+                  }
+  
+                  self.state.analytics.graphData.labels[tracker] = languageTracker[tracker].label
+                  self.state.analytics.graphData.datasets[0].data[tracker] = languageTracker[tracker].hits
+                  self.state.analytics.graphData.datasets[0].backgroundColor[tracker] = languageTracker[tracker].color
+                  tracker++;
                 }
-
-                this.state.analytics.graphData.labels[tracker] = languageTracker[tracker].label
-                this.state.analytics.graphData.datasets[0].data[tracker] = languageTracker[tracker].hits
-                this.state.analytics.graphData.datasets[0].backgroundColor[tracker] = languageTracker[tracker].color
-                tracker++;
-              }
+                
+              })
+  
               
-            })
-
-            this.setState({analytics : this.state.analytics})
-            
+  
           })
-          
-        },
-        // Note: it's important to handle errors here
-        // instead of a catch() block so that we don't swallow
-        // exceptions from actual bugs in components.
-        (error) => {
-          
-          this.setState(this.state.profile[index]);
-        }
-      )
-    })
-   
+        })
+        self.setState({analytics : self.state.analytics})
+      })
+
+    });
   }
   render() {
     return (
@@ -143,7 +155,13 @@ class UserProfile extends Component {
               <Card
                 title="GitHub Analytics"
                 content = {
-                  <Pie data={this.state.analytics.graphData} />
+                  <div>
+                  <span>
+                    This is a simple infographic showing various data from my production and hobby GitHub accounts
+                  </span>
+                  
+                  <Pie redraw={true} data={this.state.analytics.graphData} />
+                  </div>
                 }
               />
               

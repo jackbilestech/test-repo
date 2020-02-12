@@ -32,7 +32,7 @@ import AdminLayout from "layouts/site.jsx";
 ReactDOM.render(
   <BrowserRouter>
     <Switch>
-      <Route path="/" render={props => <AdminLayout {...props} />}></Route>
+      <Route path="/site" render={props => <AdminLayout {...props} />}></Route>
       <Redirect from='/' to='/site/jack'></Redirect>
     </Switch>
   </BrowserRouter>,
