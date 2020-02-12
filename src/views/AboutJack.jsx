@@ -31,7 +31,7 @@ import { FormInputs } from "components/FormInputs/FormInputs.jsx";
 import { UserCard } from "components/UserCard/UserCard.jsx";
 import Button from "components/CustomButton/CustomButton.jsx";
 import GitLayer from 'api/GitHubLayer.js'
-import { Pie ,defaults } from 'react-chartjs-2';
+import { Pie , Bar, defaults } from 'react-chartjs-2';
 
 import avatar_url from "assets/img/default-avatar.png";
 
@@ -157,11 +157,14 @@ class UserProfile extends Component {
                 content = {
                   <div>
                   <span>
-                    This is a simple infographic showing various data from my production and hobby GitHub accounts
+                    This is a simple infographic showing various data from my production and hobby GitHub accounts.
+                    <br></br>
+                    It's interactive too! Give it a hover / tap (for the mobile)!
                   </span>
-                  
+                  <br></br>
                   <Pie redraw={true} data={this.state.analytics.graphData} />
                   </div>
+                  
                 }
               />
               
